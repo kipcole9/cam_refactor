@@ -1,0 +1,2 @@
+defmodule Camera do
+end
