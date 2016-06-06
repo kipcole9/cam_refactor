@@ -22,8 +22,7 @@ defmodule QueryParams do
     changeset = Ecto.Changeset.cast({%{}, @types}, conn.params, @names)
     if changeset.valid? do
       params = Ecto.Changeset.apply_changes(changeset) |> sanitize_params
-      conn = conn.assign(:query_params, params)
-      {:ok, conn.assigns[:query_params]}
+      {:ok, params}
     else
       {:error, changeset}
     end

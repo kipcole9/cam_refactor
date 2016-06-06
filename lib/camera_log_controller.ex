@@ -53,8 +53,8 @@ defmodule EvercamMedia.LogController do
   # Note to do real error reporting you would look at the errors in the changeset
   defp extract_query_params(conn, _opts) do
     case QueryParams.extract(conn) do
-      {:ok, conn} -> 
-        conn
+      {:ok, params} -> 
+        conn.assign(:query_params, params)
       {:error, changeset} -> 
         conn 
         |> put_status(422) |> render(ErrorView, "error.json", %{message: "Invalid parameter(s)."})
