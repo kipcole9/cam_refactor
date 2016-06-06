@@ -5,11 +5,18 @@ defmodule EvercamMedia.LogController do
   alias EvercamMedia.ErrorView
   alias EvercamMedia.LogView
 
+  # A series of plugs makes it clear the transformations on the connection
+  # as it moves through processing.  And any the plug finds an error it
+  # can halt the chain and return an error
   plug retrieve_camera
   plug check_edit_permission
   plug extract_query_parameters
   plug validate_from_less_than_to
 
+  # Because we ensure all the data is present and correct before we get to the
+  # action, we make clear the actual application processing without confusing ourselves
+  # with all the validation and paramter extraction.  We also delegate the query processing
+  # to the model module.  Could be delegated to a service module, but this case is quite simple
   def show(conn, params) do
     camera = conn.assigns[:camera]
     params = conn.assigns[:query_params]
@@ -32,6 +39,7 @@ defmodule EvercamMedia.LogController do
     end
   end
   
+  # Permissions checking should probably be in an Endpoint plug so it is centralized
   defp check_edit_permission(conn, _opts) do
     if conn.assigns[:current_user] && Permission.Camera.can_edit?(conn.assigns[:current_user], conn.assigns[:camera]) do
       conn
@@ -42,6 +50,7 @@ defmodule EvercamMedia.LogController do
     end
   end
 
+  # Note to do real error reporting you would look at the errors in the changeset
   defp extract_query_params(conn, _opts) do
     case QueryParams.extract(conn) do
       {:ok, conn} -> 
@@ -53,6 +62,8 @@ defmodule EvercamMedia.LogController do
     end
   end 
 
+  # We can assume we have valid numeric values for from and to so we can just compare.
+  # Its good practise to normalize paramters in one place only
   defp validate_from_less_than_to(conn, _opts) do
     if conn.assigns[:query_params]["to"] < conn.assigns[:query_params]["from"] do
       conn 
